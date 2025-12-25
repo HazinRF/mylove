@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Для тебя...</title>
+    <!-- Подключаем рукописный шрифт для письма (Google Fonts) -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c2e 0%, #1a1a3e 50%, #2d0a3a 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Контейнер с праздничной анимацией снега */
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .snowflake {
+            position: absolute;
+            background-color: #fff;
+            border-radius: 50%;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Стили для этапа 1: Закрытый конверт */
+        .envelope-container {
+            margin-bottom: 30px;
+        }
+
+        .envelope {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            margin: 40px auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope:hover {
+            transform: scale(1.05);
+        }
+
+        .envelope-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #e63946; /* Красный цвет конверта */
+            clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%);
+            box-shadow: 0 10px 30px rgba(230, 57, 70, 0.4);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #d62839; /* Более темный оттенок для клапана */
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            transform-origin: top;
+            transition: transform 0.8s ease;
+        }
+
+        .envelope-seal {
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ffd166 30%, #f4a261 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9d0208;
+            font-size: 40px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+
+        .hearts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .heart {
+            position: absolute;
+            color: #ff9ebb;
+            font-size: 20px;
+            animation: float 4s infinite ease-in-out;
+        }
+
+        .heart:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+        .heart:nth-child(2) { top: 5%; left: 70%; animation-delay: 1s; }
+        .heart:nth-child(3) { top: 40%; left: 10%; animation-delay: 2s; }
+        .heart:nth-child(4) { top: 50%; left: 80%; animation-delay: 3s; }
+
+        /* Стили для этапа 2: Ввод даты */
+        .date-form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none; /* Скрыто по умолчанию */
+        }
+
+        .date-form-container h3 {
+            margin-bottom: 20px;
+            color: #ffd166;
+            font-size: 1.3rem;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .submit-btn {
+            background: linear-gradient(to right, #e63946, #ff6b6b);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(230, 57, 70, 0.6);
+        }
+
+        .error-message {
+            color: #ff9ebb;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            min-height: 20px;
+            display: none;
+        }
+
+        /* Стили для этапа 3: Открытое письмо */
+        .letter-container {
+            display: none; /* Скрыто по умолчанию */
+            position: relative;
+            margin-top: 30px;
+        }
+
+        .paper {
+            background-color: #fffef2;
+            color: #333;
+            padding: 30px 25px;
+            border-radius: 5px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            text-align: left;
+            min-height: 400px;
+            position: relative;
+            border: 1px solid #f5e9da;
+            /* Рукописный шрифт */
+            font-family: 'Caveat', cursive;
+        }
+
+        .paper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, rgba(255, 254, 242, 0.9), rgba(255, 254, 242, 0));
+        }
+
+        .letter-content {
+            font-size: 1.6rem; /* Размер для китайских иероглифов */
+            line-height: 1.8;
+            white-space: pre-wrap; /* Сохраняет переносы строк */
+            margin-top: 20px;
+        }
+
+        /* Декоративные элементы на странице */
+        .snowman {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 70px;
+            height: 100px;
+            z-index: 1;
+        }
+
+        .snowman-body {
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .snowman-head {
+            position: absolute;
+            bottom: 40px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .snowman-hat {
+            position: absolute;
+            bottom: 75px;
+            left: 10px;
+            width: 50px;
+            height: 10px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+
+        .snowman-hat::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            width: 30px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 5px 5px 0 0;
+        }
+
+        /* Анимации */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes openEnvelope {
+            0% { transform: rotateX(0); }
+            100% { transform: rotateX(180deg); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        /* Адаптивность для очень маленьких экранов */
+        @media (max-width: 400px) {
+            .envelope { width: 250px; height: 160px; }
+            .paper { padding: 20px 15px; }
+            .letter-content { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Контейнер для снежинок (фоновая анимация) -->
+    <div id="snowflakes-container"></div>
+
+    <!-- Снеговик (декор) -->
+    <div class="snowman">
+        <div class="snowman-hat"></div>
+        <div class="snowman-head"></div>
+        <div class="snowman-body"></div>
+    </div>
+
+    <div class="container">
+
+        <!-- ЗАГОЛОВОК -->
+        <h1 style="margin-bottom: 10px; color: #ffd166;">✨ Для моей самой любимой ✨</h1>
+        <p style="margin-bottom: 30px; color: #a5b4fc;">Открой конверт и узнай секрет...</p>
+
+        <!-- ЭТАП 1: ЗАКРЫТЫЙ КОНВЕРТ -->
+        <div class="envelope-container" id="stage-envelope">
+            <div class="envelope" id="envelope">
+                <div class="envelope-body"></div>
+                <div class="envelope-flap" id="envelope-flap"></div>
+                <div class="envelope-seal">❤️</div>
+                <div class="hearts">
+                    <div class="heart">❤️</div>
+                    <div class="heart">❤️</div>
+                    <div class="heart">❤️</div>
+                    <div class="heart">❤️</div>
+                </div>
+            </div>
+            <p>Коснись конверта, чтобы открыть его...</p>
+        </div>
+
+        <!-- ЭТАП 2: ФОРМА ВВОДА ДАТЫ -->
+        <div class="date-form-container" id="stage-date-form">
+            <h3>Начало нашей любви</h3>
+            <p style="margin-bottom: 15px; color: #ccc;">Введи дату в формате ДД.ММ.ГГГГ</p>
+            <input type="text" class="date-input" id="date-input" placeholder="дд.мм.гггг" maxlength="10">
+            <button class="submit-btn" id="submit-date">Открыть моё сердце</button>
+            <div class="error-message" id="error-message">Неверная дата. Попробуй еще раз!</div>
+        </div>
+
+        <!-- ЭТАП 3: ОТКРЫТОЕ ПИСЬМО -->
+        <div class="letter-container" id="stage-letter">
+            <div class="paper fade-in-up">
+                <div style="text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 20px; color: #555;">
+                    <strong>Моей любимой</strong><br>
+                    <span id="current-date"></span>
+                </div>
+                <div class="letter-content">
+                    <!-- ЗАГЛУШКА. ЗАМЕНИТЕ ЭТОТ ТЕКСТ НА СВОЙ (НА КИТАЙСКОМ) -->
+                    亲爱的宝贝，
+
+                    这是我们第一次约会的日子...
+                    这是我生命中最美好的一天...
+
+                    这里会是你的信...
+                    你可以在这里写下任何你想说的话。
+
+                    永远爱你的...
+                    <!-- КОНЕЦ ЗАГЛУШКИ -->
+                </div>
+                <div style="text-align: right; margin-top: 40px; color: #777;">
+                    С любовью... ❤️
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- конец .container -->
+
+    <script>
+        // Элементы страницы
+        const envelope = document.getElementById('envelope');
+        const envelopeFlap = document.getElementById('envelope-flap');
+        const stageEnvelope = document.getElementById('stage-envelope');
+        const stageDateForm = document.getElementById('stage-date-form');
+        const stageLetter = document.getElementById('stage-letter');
+        const dateInput = document.getElementById('date-input');
+        const submitDateBtn = document.getElementById('submit-date');
+        const errorMessage = document.getElementById('error-message');
+        const currentDateSpan = document.getElementById('current-date');
+
+        // Правильная дата (пароль)
+        const correctDate = '26.07.2025';
+
+        // 1. Обработчик клика на конверт
+        envelope.addEventListener('click', function() {
+            // Анимация "открытия" конверта (поднятие клапана)
+            envelopeFlap.style.transform = 'rotateX(180deg)';
+
+            // Плавно скрываем конверт и показываем форму ввода даты
+            setTimeout(() => {
+                stageEnvelope.style.display = 'none';
+                stageDateForm.style.display = 'block';
+                stageDateForm.classList.add('fade-in-up');
+                // Фокус на поле ввода даты
+                dateInput.focus();
+            }, 500);
+        });
+
+        // 2. Обработчик ввода даты (маска ДД.ММ.ГГГГ)
+        dateInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0,2) + '.' + value.substring(2);
+            }
+            if (value.length >= 5) {
+                value = value.substring(0,5) + '.' + value.substring(5, 9);
+            }
+            e.target.value = value;
+            // Скрываем ошибку при новом вводе
+            errorMessage.style.display = 'none';
+        });
+
+        // 3. Обработчик проверки даты
+        submitDateBtn.addEventListener('click', checkDate);
+        dateInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkDate();
+            }
+        });
+
+        function checkDate() {
+            const enteredDate = dateInput.value.trim();
+
+            if (enteredDate === correctDate) {
+                // Дата верна! Скрываем форму, показываем письмо
+                errorMessage.style.display = 'none';
+                stageDateForm.style.display = 'none';
+
+                // Устанавливаем текущую дату в письмо
+                const today = new Date();
+                const formattedDate = today.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                currentDateSpan.textContent = formattedDate;
+
+                // Показываем письмо с анимацией
+                stageLetter.style.display = 'block';
+
+                // Прокручиваем страницу к письму (для мобилок)
+                stageLetter.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            } else {
+                // Неверная дата
+                errorMessage.style.display = 'block';
+                dateInput.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    dateInput.style.animation = '';
+                }, 500);
+            }
+        }
+
+        // Создание снежинок на фоне
+        function createSnowflakes() {
+            const container = document.getElementById('snowflakes-container');
+            const snowflakeCount = 50;
+
+            for (let i = 0; i < snowflakeCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+
+                const size = Math.random() * 5 + 3;
+                const startX = Math.random() * 100;
+                const duration = Math.random() * 10 + 10;
+                const delay = Math.random() * -20;
+
+                snowflake.style.width = `${size}px`;
+                snowflake.style.height = `${size}px`;
+                snowflake.style.left = `${startX}vw`;
+                snowflake.style.top = `-20px`;
+                snowflake.style.opacity = Math.random() * 0.5 + 0.3;
+
+                snowflake.style.animation = `fall ${duration}s linear ${delay}s infinite`;
+
+                container.appendChild(snowflake);
+            }
+
+            // Добавляем анимацию падения в стили
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fall {
+                    to {
+                        transform: translateY(100vh) rotate(360deg);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Запускаем всё при загрузке страницы
+        window.onload = function() {
+            createSnowflakes();
+        };
+    </script>
+</body>
+</html>
